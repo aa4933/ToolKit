@@ -1,3 +1,4 @@
+<!--aa4933修改于2016年-->
 <!DOCTYPE html>
 <html lang="en" >
     <head>
@@ -10,24 +11,30 @@
         <div class="container">
             <div class="upload_form_cont">
                 <form id="upload_form" enctype="multipart/form-data" method="post" action="upload.php">
+
+                    <!--表单可随意修改，切记，以下div必须全套复制，否则会造成js无法找到相应的div报错-->
                     <div>
                         <div><label for="image_file">Please select image file</label></div>
                         <div><input type="file" name="image_file" id="image_file" onchange="fileSelected();" /></div>
                     </div>
+                    <!--上传和开始上传分为两个部分-->
                     <div>
                         <input type="button" value="Upload" onclick="startUploading()" />
                     </div>
+                    <!--文件基本信息显示，当调用文件选择事件的时候会启用这个div-->
                     <div id="fileinfo">
                         <div id="filename"></div>
                         <div id="filesize"></div>
                         <div id="filetype"></div>
                         <div id="filedim"></div>
                     </div>
+                    <!--文件错误信息显示，当文件上传出现错误的时候会启用这个div-->
                     <div id="error">You should select valid image files only!</div>
                     <div id="error2">An error occurred while uploading the file</div>
                     <div id="abort">The upload has been canceled by the user or the browser dropped the connection</div>
                     <div id="warnsize">Your file is very big. We can't accept it. Please select more small file</div>
 
+                    <!--上传进度条展示，有速度显示-->
                     <div id="progress_info">
                         <div id="progress"></div>
                         <div id="progress_percent">&nbsp;</div>
@@ -38,8 +45,11 @@
                             <div id="b_transfered">&nbsp;</div>
                             <div class="clear_both"></div>
                         </div>
+                        <!--上传成功结果显示，当上传成功的时候，所有服务器返回信息会显示在这里-->
                         <div id="upload_response"></div>
                     </div>
+
+
                 </form>
 
                 <img id="preview" />

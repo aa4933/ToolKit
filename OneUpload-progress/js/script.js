@@ -1,4 +1,7 @@
-// common variables
+/*
+ 如果在html模版中修改了div的id，则需要修改这里所有使用原生js选择的选择器
+ */
+// 公共参数设置，主要对于上传限制设置
 var iBytesUploaded = 0;
 var iBytesTotal = 0;
 var iPreviousBytesLoaded = 0;
@@ -6,15 +9,23 @@ var iMaxFilesize = 1048576; // 1MB
 var oTimer = 0;
 var sResultFileSize = '';
 
-function secondsToTime(secs) { // we will use this function to convert seconds in normal time format
+function secondsToTime(secs) { // 此方法用于基本的时间处理显示
     var hr = Math.floor(secs / 3600);
-    var min = Math.floor((secs - (hr * 3600))/60);
-    var sec = Math.floor(secs - (hr * 3600) -  (min * 60));
+    var min = Math.floor((secs - (hr * 3600)) / 60);
+    var sec = Math.floor(secs - (hr * 3600) - (min * 60));
 
-    if (hr < 10) {hr = "0" + hr; }
-    if (min < 10) {min = "0" + min;}
-    if (sec < 10) {sec = "0" + sec;}
-    if (hr) {hr = "00";}
+    if (hr < 10) {
+        hr = "0" + hr;
+    }
+    if (min < 10) {
+        min = "0" + min;
+    }
+    if (sec < 10) {
+        sec = "0" + sec;
+    }
+    if (hr) {
+        hr = "00";
+    }
     return hr + ':' + min + ':' + sec;
 };
 
@@ -27,42 +38,48 @@ function bytesToSize(bytes) {
 
 function fileSelected() {
 
-    // hide different warnings
+    // 隐藏所有初始化警告信息
+    // -----------------------------------------------此处如果修改id则需要修改---------------------------------------------
     document.getElementById('upload_response').style.display = 'none';
     document.getElementById('error').style.display = 'none';
     document.getElementById('error2').style.display = 'none';
     document.getElementById('abort').style.display = 'none';
     document.getElementById('warnsize').style.display = 'none';
 
-    // get selected file element
+    // 获取文件选择的div
+    // -----------------------------------------------此处如果修改id则需要修改---------------------------------------------
     var oFile = document.getElementById('image_file').files[0];
 
-    // filter for image files
+    // 过滤基本格式
+    // -----------------------------------------------此处如果修改id则需要修改---------------------------------------------
     var rFilter = /^(image\/bmp|image\/gif|image\/jpeg|image\/png|image\/tiff)$/i;
-    if (! rFilter.test(oFile.type)) {
+    if (!rFilter.test(oFile.type)) {
         document.getElementById('error').style.display = 'block';
         return;
     }
 
-    // little test for filesize
+    //过滤文件大小
+    // -----------------------------------------------此处如果修改id则需要修改---------------------------------------------
     if (oFile.size > iMaxFilesize) {
         document.getElementById('warnsize').style.display = 'block';
         return;
     }
 
-    // get preview element
+    // 此处用于文件的基本展示
+    // -----------------------------------------------此处如果修改id则需要修改---------------------------------------------
     var oImage = document.getElementById('preview');
 
-    // prepare HTML5 FileReader
+    //html5文件读取流
     var oReader = new FileReader();
-        oReader.onload = function(e){
+    oReader.onload = function (e) {
 
-        // e.target.result contains the DataURL which we will use as a source of the image
+        // 获取内存读取的图片
         oImage.src = e.target.result;
 
-        oImage.onload = function () { // binding onload event
+        oImage.onload = function () { // 回调事件
 
-            // we are going to display some custom image information here
+            // 展示图片所有信息
+            // -----------------------------------------------此处如果修改id则需要修改---------------------------------------------
             sResultFileSize = bytesToSize(oFile.size);
             document.getElementById('fileinfo').style.display = 'block';
             document.getElementById('filename').innerHTML = 'Name: ' + oFile.name;
@@ -72,12 +89,13 @@ function fileSelected() {
         };
     };
 
-    // read selected file as DataURL
+    //读取选中的文件地址
     oReader.readAsDataURL(oFile);
 }
 
 function startUploading() {
-    // cleanup all temp states
+    // 开始上传准备，需要清除所有上传警告信息
+    // -----------------------------------------------此处如果修改id则需要修改---------------------------------------------
     iPreviousBytesLoaded = 0;
     document.getElementById('upload_response').style.display = 'none';
     document.getElementById('error').style.display = 'none';
@@ -89,16 +107,18 @@ function startUploading() {
     oProgress.style.display = 'block';
     oProgress.style.width = '0px';
 
-    // get form data for POSTing
+    // 获取表单的POST提交数据，使用ajax的原生原理代码提交
     //var vFD = document.getElementById('upload_form').getFormData(); // for FF3
-    var vFD = new FormData(document.getElementById('upload_form')); 
+    var vFD = new FormData(document.getElementById('upload_form'));
 
-    // create XMLHttpRequest object, adding few event listeners, and POSTing our data
-    var oXHR = new XMLHttpRequest();        
+    // 创建XML请求对象，提交数据
+    var oXHR = new XMLHttpRequest();
     oXHR.upload.addEventListener('progress', uploadProgress, false);
     oXHR.addEventListener('load', uploadFinish, false);
     oXHR.addEventListener('error', uploadError, false);
     oXHR.addEventListener('abort', uploadAbort, false);
+    //POST请求的数据位置
+    // -----------------------------------------------此处必须修改---------------------------------------------
     oXHR.open('POST', 'upload.php');
     oXHR.send(vFD);
 
@@ -106,11 +126,11 @@ function startUploading() {
     oTimer = setInterval(doInnerUpdates, 300);
 }
 
-function doInnerUpdates() { // we will use this function to display upload speed
+function doInnerUpdates() { // 此处用于速度的展示
     var iCB = iBytesUploaded;
     var iDiff = iCB - iPreviousBytesLoaded;
 
-    // if nothing new loaded - exit
+    // 如果不存在，退出
     if (iDiff == 0)
         return;
 
@@ -119,43 +139,50 @@ function doInnerUpdates() { // we will use this function to display upload speed
     var iBytesRem = iBytesTotal - iPreviousBytesLoaded;
     var secondsRemaining = iBytesRem / iDiff;
 
-    // update speed info
+    // 速度格式转换
     var iSpeed = iDiff.toString() + 'B/s';
     if (iDiff > 1024 * 1024) {
-        iSpeed = (Math.round(iDiff * 100/(1024*1024))/100).toString() + 'MB/s';
+        iSpeed = (Math.round(iDiff * 100 / (1024 * 1024)) / 100).toString() + 'MB/s';
     } else if (iDiff > 1024) {
-        iSpeed =  (Math.round(iDiff * 100/1024)/100).toString() + 'KB/s';
+        iSpeed = (Math.round(iDiff * 100 / 1024) / 100).toString() + 'KB/s';
     }
 
+    // -----------------------------------------------此处如果修改id则需要修改---------------------------------------------
     document.getElementById('speed').innerHTML = iSpeed;
-    document.getElementById('remaining').innerHTML = '| ' + secondsToTime(secondsRemaining);        
+    document.getElementById('remaining').innerHTML = '| ' + secondsToTime(secondsRemaining);
 }
 
-function uploadProgress(e) { // upload process in progress
+function uploadProgress(e) { // 上传进度流展示
     if (e.lengthComputable) {
         iBytesUploaded = e.loaded;
         iBytesTotal = e.total;
         var iPercentComplete = Math.round(e.loaded * 100 / e.total);
         var iBytesTransfered = bytesToSize(iBytesUploaded);
 
+        // -----------------------------------------------此处如果修改id则需要修改---------------------------------------------
         document.getElementById('progress_percent').innerHTML = iPercentComplete.toString() + '%';
         document.getElementById('progress').style.width = (iPercentComplete * 4).toString() + 'px';
         document.getElementById('b_transfered').innerHTML = iBytesTransfered;
         if (iPercentComplete == 100) {
+            // -----------------------------------------------此处如果修改id则需要修改---------------------------------------------
             var oUploadResponse = document.getElementById('upload_response');
             oUploadResponse.innerHTML = '<h1>Please wait...processing</h1>';
             oUploadResponse.style.display = 'block';
         }
     } else {
+        // -----------------------------------------------此处如果修改id则需要修改---------------------------------------------
         document.getElementById('progress').innerHTML = 'unable to compute';
     }
 }
 
-function uploadFinish(e) { // upload successfully finished
+function uploadFinish(e) { //上传成功以后
+
+    // -----------------------------------------------此处如果修改id则需要修改---------------------------------------------
     var oUploadResponse = document.getElementById('upload_response');
     oUploadResponse.innerHTML = e.target.responseText;
     oUploadResponse.style.display = 'block';
 
+    // -----------------------------------------------此处如果修改id则需要修改---------------------------------------------
     document.getElementById('progress_percent').innerHTML = '100%';
     document.getElementById('progress').style.width = '400px';
     document.getElementById('filesize').innerHTML = sResultFileSize;
@@ -164,12 +191,16 @@ function uploadFinish(e) { // upload successfully finished
     clearInterval(oTimer);
 }
 
-function uploadError(e) { // upload error
+function uploadError(e) { // 上传失败
+    //情况极其少见
+    // -----------------------------------------------此处如果修改id则需要修改---------------------------------------------
     document.getElementById('error2').style.display = 'block';
     clearInterval(oTimer);
-}  
+}
 
-function uploadAbort(e) { // upload abort
+function uploadAbort(e) { //上传终止
+    //情况极其少见
+    // -----------------------------------------------此处如果修改id则需要修改---------------------------------------------
     document.getElementById('abort').style.display = 'block';
     clearInterval(oTimer);
 }

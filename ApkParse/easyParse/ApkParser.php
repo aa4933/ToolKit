@@ -1,5 +1,4 @@
 <?php
-namespace APP\Helper;
 /**
  * please thanks
  * This wulihh write by 17:12 2016 08 23
